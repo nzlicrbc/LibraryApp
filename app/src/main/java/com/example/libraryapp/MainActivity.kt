@@ -5,6 +5,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -13,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: BookAdapter
     private lateinit var searchButton: Button
     private lateinit var searchEditText: EditText
 
@@ -23,11 +26,14 @@ class MainActivity : AppCompatActivity() {
         // UI öğelerini tanımla
         searchButton = findViewById(R.id.searchButton)
         searchEditText = findViewById(R.id.searchEditText)
+        recyclerView = findViewById(R.id.recyclerView)
+
+        recyclerView.layoutManager = LinearLayoutManager(this)
 
         searchButton.setOnClickListener {
             val query = searchEditText.text.toString()
             if (query.isNotEmpty()) {
-                searchBooks(query)
+                searchBooks(query)  // sadece kitapları arayacağız
             } else {
                 Toast.makeText(this, "Lütfen bir arama terimi girin.", Toast.LENGTH_SHORT).show()
             }
@@ -44,10 +50,9 @@ class MainActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     val books = response.body()?.docs
                     books?.let {
-                        // Burada kitapları RecyclerView veya ListView ile listeleyebilirsiniz
-                        // Örneğin, Toast ile sadece başlıkları gösterebiliriz:
-                        val bookTitles = it.joinToString("\n") { book -> book.title }
-                        Toast.makeText(this@MainActivity, bookTitles, Toast.LENGTH_LONG).show()
+                        // Kitapları RecyclerView ile listeleyelim
+                        adapter = BookAdapter(it)
+                        recyclerView.adapter = adapter
                     }
                 }
             }
