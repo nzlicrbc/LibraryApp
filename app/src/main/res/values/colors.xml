@@ -2,4 +2,31 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="background">#D8F5E6D8</color>
+    <color name="progress_bar">#F0732817</color>
+    <color name="text_author">#D3000000</color>
+    <color name="ripple_color">#33000000</color>
+
+    <!-- Primary Color -->
+    <color name="colorPrimary">#003366</color> <!-- Derin Lacivert -->
+    <color name="colorPrimaryDark">#002244</color> <!-- Daha koyu ton -->
+    <color name="colorAccent">#FF5722</color> <!-- Canlı Turuncu -->
+    <color name="colorPrimaryLight">#1A003366</color>
+
+    <!-- Background Colors -->
+    <color name="colorBackgroundLight">#F9F9F9</color> <!-- Açık Beyaz -->
+    <color name="colorBackgroundDark">#EEEEEE</color> <!-- Hafif Gri -->
+
+    <!-- Text Colors -->
+    <color name="colorTextPrimary">#333333</color> <!-- Koyu Gri -->
+    <color name="colorTextSecondary">#666666</color> <!-- Daha açık metin için -->
+
+    <!-- Button Colors -->
+    <color name="colorButton">#4CAF50</color> <!-- Yeşil ton -->
+    <color name="colorButtonPressed">#388E3C</color> <!-- Daha koyu yeşil ton -->
+
+    <!-- Additional Colors -->
+    <color name="colorError">#D32F2F</color> <!-- Hata mesajları için kırmızı -->
+    <color name="colorSuccess">#388E3C</color> <!-- Başarı mesajları için yeşil -->
+    <color name="colorDivider">#BDBDBD</color> <!-- Çizgi/delimiter için -->
 </resources>
