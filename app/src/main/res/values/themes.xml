@@ -2,6 +2,10 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.LibraryApp" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
+        <item name="android:statusBarColor">@color/colorPrimary</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="android:homeAsUpIndicator">@drawable/ic_arrow_back_white</item>
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
