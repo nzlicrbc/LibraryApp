@@ -24,7 +24,7 @@ class BookRepositoryImpl @Inject constructor(
         maxResults: Int,
         startIndex: Int,
         orderBy: String
-    ): List<GoogleBook> {
+    ): Result<List<GoogleBook>> {
         return withContext(Dispatchers.IO) {
             try {
                 ensureActive()
@@ -37,22 +37,28 @@ class BookRepositoryImpl @Inject constructor(
                 )
 
                 ensureActive()
-                response.items?.shuffled() ?: emptyList()
+                Result.success(response.items ?: emptyList())
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 Log.e("BookRepository", "Error searching books", e)
-                emptyList()
+                Result.failure(e)
             }
         }
     }
 
-    override suspend fun getBooksBySubject(subject: String): List<GoogleBook> {
-        return try {
-            googleBooksApi.searchBooks("subject:$subject").items ?: emptyList()
-        } catch (e: Exception) {
-            Log.e("BookRepository", "Error getting books by subject", e)
-            emptyList()
+    override suspend fun getBooksBySubject(subject: String): Result<List<GoogleBook>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                ensureActive()
+                val items = googleBooksApi.searchBooks("subject:$subject").items ?: emptyList()
+                Result.success(items)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("BookRepository", "Error getting books by subject", e)
+                Result.failure(e)
+            }
         }
     }
 

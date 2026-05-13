@@ -10,8 +10,8 @@ interface BookRepository {
         maxResults: Int = 40,
         startIndex: Int = 0,
         orderBy: String = "relevance"
-    ): List<GoogleBook>
-    suspend fun getBooksBySubject(subject: String): List<GoogleBook>
+    ): Result<List<GoogleBook>>
+    suspend fun getBooksBySubject(subject: String): Result<List<GoogleBook>>
     suspend fun getBookDetails(id: String): GoogleBook?
     suspend fun getFavoriteBooks(): List<SavedBookEntity>
     suspend fun getSavedBooks(): List<SavedBookEntity>

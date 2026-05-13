@@ -28,29 +28,24 @@ class ListViewModel @Inject constructor(
 
     private fun loadBooks() {
         viewModelScope.launch {
-            try {
-                _books.value = UIState.Loading
-                val searchTerms = listOf(
-                    "subject:fiction",
-                    "subject:fantasy",
-                    "subject:mystery",
-                    "subject:romance",
-                    "subject:science",
-                    "subject:history"
-                )
-                val randomTerm = searchTerms.random()
-
-                val result = bookRepository.searchBooks(
-                    query = randomTerm,
-                    maxResults = 40,
-                    orderBy = "relevance"
-                ).shuffled()
-                    .take(20)
-
-                _books.value = UIState.Success(result)
-            } catch (e: Exception) {
-                _books.value = UIState.Error(e.message ?: "An error occurred")
-            }
+            _books.value = UIState.Loading
+            val subjects = listOf(
+                "fiction",
+                "fantasy",
+                "mystery",
+                "romance",
+                "science",
+                "history"
+            )
+            val randomSubject = subjects.random()
+            bookRepository.getBooksBySubject(randomSubject).fold(
+                onSuccess = { list ->
+                    _books.value = UIState.Success(list.shuffled().take(20))
+                },
+                onFailure = { e ->
+                    _books.value = UIState.Error(e.message ?: "An error occurred")
+                }
+            )
         }
     }
 

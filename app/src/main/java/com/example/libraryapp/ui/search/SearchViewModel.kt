@@ -2,6 +2,7 @@ package com.example.libraryapp.ui.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.libraryapp.data.remote.model.GoogleBook
 import com.example.libraryapp.data.repository.BookRepository
 import com.example.libraryapp.ui.search.model.SearchState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,30 +37,42 @@ class SearchViewModel @Inject constructor(
                 _searchState.value = SearchState.Loading
                 delay(300)
 
-                val results = withTimeout(30000L) {
-                    when {
-                        query.length >= 3 && query.contains(" ") -> {
-                            bookRepository.searchBooks(
-                                query = "intitle:\"$query\"",
-                                maxResults = 5
-                            ).distinctBy { it.volumeInfo.title }
+                val outcome: Result<List<GoogleBook>> =
+                    withTimeout(30000L) {
+                        when {
+                            query.length >= 3 && query.contains(" ") -> {
+                                bookRepository.searchBooks(
+                                    query = "intitle:\"$query\"",
+                                    maxResults = 5
+                                ).map { books ->
+                                    books.distinctBy { it.volumeInfo.title }
+                                }
+                            }
+                            query.length >= 2 -> {
+                                bookRepository.searchBooks(
+                                    query = "intitle:$query",
+                                    maxResults = 10
+                                ).map { books ->
+                                    books.distinctBy { it.volumeInfo.title }
+                                        .sortedBy { it.volumeInfo.title?.length }
+                                }
+                            }
+                            else -> Result.success(emptyList())
                         }
-                        query.length >= 2 -> {
-                            bookRepository.searchBooks(
-                                query = "intitle:$query",
-                                maxResults = 10
-                            ).distinctBy { it.volumeInfo.title }
-                                .sortedBy { it.volumeInfo.title?.length }
-                        }
-                        else -> emptyList()
                     }
-                }
 
-                if (results.isEmpty()) {
-                    _searchState.value = SearchState.Empty
-                } else {
-                    _searchState.value = SearchState.Success(results)
-                }
+                outcome.fold(
+                    onSuccess = { results ->
+                        if (results.isEmpty()) {
+                            _searchState.value = SearchState.Empty
+                        } else {
+                            _searchState.value = SearchState.Success(results)
+                        }
+                    },
+                    onFailure = { e ->
+                        _searchState.value = SearchState.Error(e.message ?: "An error occurred")
+                    }
+                )
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
