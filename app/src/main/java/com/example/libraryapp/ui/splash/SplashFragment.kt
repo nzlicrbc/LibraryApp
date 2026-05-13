@@ -7,10 +7,12 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.libraryapp.R
 import com.example.libraryapp.data.auth.AuthManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -35,10 +37,13 @@ class SplashFragment : Fragment() {
     }
 
     private fun checkAuthState() {
-        if (authManager.isLoggedIn()) {
-            findNavController().navigate(SplashFragmentDirections.toHomeFragment())
-        } else {
-            findNavController().navigate(SplashFragmentDirections.toLoginFragment())
+        viewLifecycleOwner.lifecycleScope.launch {
+            val loggedIn = authManager.tryAutoLogin()
+            if (loggedIn) {
+                findNavController().navigate(SplashFragmentDirections.toHomeFragment())
+            } else {
+                findNavController().navigate(SplashFragmentDirections.toLoginFragment())
+            }
         }
     }
 }
