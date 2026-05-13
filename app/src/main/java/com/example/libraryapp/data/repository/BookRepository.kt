@@ -27,4 +27,6 @@ interface BookRepository {
     suspend fun getReadBooks(): List<SavedBookEntity>
     suspend fun isRead(bookId: String): Boolean
     suspend fun toggleRead(book: GoogleBook)
+    suspend fun getLastReadScrollPosition(bookId: String): Int
+    suspend fun saveLastReadScrollPosition(bookId: String, position: Int)
 }

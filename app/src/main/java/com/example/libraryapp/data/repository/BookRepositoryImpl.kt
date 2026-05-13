@@ -7,6 +7,7 @@ import com.example.libraryapp.data.remote.GeminiService
 import com.example.libraryapp.data.remote.GoogleBooksApi
 import com.example.libraryapp.data.remote.model.GoogleBook
 import com.example.libraryapp.ui.airecommend.model.UserPreferences
+import com.example.libraryapp.util.PrefUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
@@ -101,9 +102,11 @@ class BookRepositoryImpl @Inject constructor(
                         author = book.volumeInfo.authors?.firstOrNull() ?: "",
                         thumbnailUrl = book.volumeInfo.imageLinks?.thumbnail,
                         isFavorite = true,
-                        isSaved = false
+                        isSaved = false,
+                        lastReadPosition = PrefUtil.getBookScrollPosition(book.id)
                     )
                 )
+                PrefUtil.clearBookScrollPosition(book.id)
             }
         } catch (e: Exception) {
             Log.e("BookRepository", "Error toggling favorite", e)
@@ -126,9 +129,11 @@ class BookRepositoryImpl @Inject constructor(
                         author = book.volumeInfo.authors?.firstOrNull() ?: "",
                         thumbnailUrl = book.volumeInfo.imageLinks?.thumbnail,
                         isFavorite = false,
-                        isSaved = true
+                        isSaved = true,
+                        lastReadPosition = PrefUtil.getBookScrollPosition(book.id)
                     )
                 )
+                PrefUtil.clearBookScrollPosition(book.id)
             }
         } catch (e: Exception) {
             Log.e("BookRepository", "Error toggling save", e)
@@ -246,12 +251,37 @@ class BookRepositoryImpl @Inject constructor(
                         author = book.volumeInfo.authors?.firstOrNull() ?: "",
                         thumbnailUrl = book.volumeInfo.imageLinks?.thumbnail,
                         isRead = true,
-                        completedDate = System.currentTimeMillis()
+                        completedDate = System.currentTimeMillis(),
+                        lastReadPosition = PrefUtil.getBookScrollPosition(book.id)
                     )
                 )
+                PrefUtil.clearBookScrollPosition(book.id)
             }
         } catch (e: Exception) {
             Log.e("BookRepository", "Error toggling read status", e)
+        }
+    }
+
+    override suspend fun getLastReadScrollPosition(bookId: String): Int {
+        return withContext(Dispatchers.IO) {
+            val entity = savedBooksDao.getBookById(bookId)
+            val pref = PrefUtil.getBookScrollPosition(bookId)
+            val db = entity?.lastReadPosition ?: 0
+            val merged = maxOf(db, pref)
+            if (entity != null && merged > db) {
+                savedBooksDao.updateLastReadPosition(bookId, merged)
+            }
+            merged
+        }
+    }
+
+    override suspend fun saveLastReadScrollPosition(bookId: String, position: Int) {
+        withContext(Dispatchers.IO) {
+            if (savedBooksDao.getBookById(bookId) != null) {
+                savedBooksDao.updateLastReadPosition(bookId, position)
+            } else {
+                PrefUtil.saveBookScrollPosition(bookId, position)
+            }
         }
     }
 }

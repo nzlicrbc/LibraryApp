@@ -40,4 +40,7 @@ interface SavedBooksDao {
 
     @Query("UPDATE saved_books SET isRead = :isRead, completedDate = :completedDate WHERE bookId = :bookId")
     suspend fun updateReadStatus(bookId: String, isRead: Boolean, completedDate: Long? = System.currentTimeMillis())
+
+    @Query("UPDATE saved_books SET lastReadPosition = :position WHERE bookId = :bookId")
+    suspend fun updateLastReadPosition(bookId: String, position: Int)
 }

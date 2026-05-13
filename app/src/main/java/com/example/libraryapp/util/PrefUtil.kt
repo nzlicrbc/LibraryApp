@@ -68,4 +68,8 @@ object PrefUtil {
     fun getBookScrollPosition(bookId: String): Int {
         return pref.getInt(SCROLL_POSITION_PREFIX + bookId, 0)
     }
+
+    fun clearBookScrollPosition(bookId: String) {
+        editor.remove(SCROLL_POSITION_PREFIX + bookId).apply()
+    }
 }
