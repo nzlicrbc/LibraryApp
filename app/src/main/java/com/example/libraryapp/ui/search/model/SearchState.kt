@@ -7,6 +7,10 @@ sealed class SearchState {
     object Initial : SearchState()
     object Loading : SearchState()
     object Empty : SearchState()
-    data class Success(val books: List<GoogleBook>) : SearchState()
+    data class Success(
+        val books: List<GoogleBook>,
+        val canLoadMore: Boolean = false,
+        val loadingMore: Boolean = false
+    ) : SearchState()
     data class Error(val message: String) : SearchState()
 }

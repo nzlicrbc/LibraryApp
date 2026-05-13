@@ -13,6 +13,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.libraryapp.databinding.FragmentSearchBinding
 import com.example.libraryapp.ui.list.adapter.BookAdapter
 import com.example.libraryapp.ui.search.model.SearchState
@@ -54,6 +56,18 @@ class SearchFragment : Fragment() {
             }
         })
         binding.searchRecyclerView.adapter = searchAdapter
+        binding.loadingMoreBar.isVisible = false
+        binding.searchRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                val lm = recyclerView.layoutManager as? LinearLayoutManager ?: return
+                if (dy <= 0) return
+                val lastVisible = lm.findLastVisibleItemPosition()
+                val total = lm.itemCount
+                if (total > 0 && lastVisible >= total - 3) {
+                    viewModel.loadMore()
+                }
+            }
+        })
     }
 
     private fun observeViewModel() {
@@ -71,23 +85,28 @@ class SearchFragment : Fragment() {
             SearchState.Initial -> {
                 binding.emptyView.isVisible = false
                 binding.progressBar.isVisible = false
+                binding.loadingMoreBar.isVisible = false
             }
             SearchState.Loading -> {
                 binding.progressBar.isVisible = true
                 binding.emptyView.isVisible = false
+                binding.loadingMoreBar.isVisible = false
             }
             SearchState.Empty -> {
                 binding.progressBar.isVisible = false
                 binding.emptyView.isVisible = true
+                binding.loadingMoreBar.isVisible = false
                 searchAdapter.updateData(emptyList())
             }
             is SearchState.Success -> {
                 binding.progressBar.isVisible = false
                 binding.emptyView.isVisible = false
+                binding.loadingMoreBar.isVisible = state.loadingMore
                 searchAdapter.updateData(state.books)
             }
             is SearchState.Error -> {
                 binding.progressBar.isVisible = false
+                binding.loadingMoreBar.isVisible = false
                 context?.let {
                     Toast.makeText(it, state.message, Toast.LENGTH_SHORT).show()
                 }

@@ -24,7 +24,7 @@ class BookRepositoryImpl @Inject constructor(
         maxResults: Int,
         startIndex: Int,
         orderBy: String
-    ): Result<List<GoogleBook>> {
+    ): Result<BookPage> {
         return withContext(Dispatchers.IO) {
             try {
                 ensureActive()
@@ -37,7 +37,10 @@ class BookRepositoryImpl @Inject constructor(
                 )
 
                 ensureActive()
-                Result.success(response.items ?: emptyList())
+                val items = response.items ?: emptyList()
+                val hasMore = items.isNotEmpty() &&
+                    startIndex + items.size < response.totalItems
+                Result.success(BookPage(items, hasMore))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -47,12 +50,23 @@ class BookRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getBooksBySubject(subject: String): Result<List<GoogleBook>> {
+    override suspend fun getBooksBySubject(
+        subject: String,
+        maxResults: Int,
+        startIndex: Int
+    ): Result<BookPage> {
         return withContext(Dispatchers.IO) {
             try {
                 ensureActive()
-                val items = googleBooksApi.searchBooks("subject:$subject").items ?: emptyList()
-                Result.success(items)
+                val response = googleBooksApi.searchBooks(
+                    query = "subject:$subject",
+                    maxResults = maxResults,
+                    startIndex = startIndex
+                )
+                val items = response.items ?: emptyList()
+                val hasMore = items.isNotEmpty() &&
+                    startIndex + items.size < response.totalItems
+                Result.success(BookPage(items, hasMore))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
