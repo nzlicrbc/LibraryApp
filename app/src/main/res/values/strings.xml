@@ -54,4 +54,17 @@
     <string name="category_others">Others</string>
     <string name="view_books">View Books</string>
     <string name="books_count_format">%1$d books</string>
+    <string name="shelf_title_fiction">Fiction</string>
+    <string name="shelf_title_design">Design</string>
+    <string name="shelf_title_psychology">Psychology</string>
+    <string name="shelf_title_history">History</string>
+    <string name="shelf_title_science">Science</string>
+    <string name="shelf_title_romance">Romance</string>
+    <string name="shelf_title_biography">Biography</string>
+    <string name="shelf_title_art">Art</string>
+    <string name="shelf_title_business">Business</string>
+    <string name="shelf_title_fantasy">Fantasy</string>
+    <string name="shelf_title_mystery">Mystery</string>
+    <string name="shelf_title_poetry">Poetry</string>
+    <string name="shelf_title_religion">Religion</string>
 </resources>

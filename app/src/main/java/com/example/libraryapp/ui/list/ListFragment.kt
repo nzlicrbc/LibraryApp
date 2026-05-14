@@ -12,7 +12,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.libraryapp.databinding.FragmentListBinding
 import com.example.libraryapp.ui.list.adapter.CategoryShelfSectionsAdapter
 import com.example.libraryapp.ui.list.model.UIState
@@ -42,11 +41,16 @@ class ListFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        shelfAdapter = CategoryShelfSectionsAdapter { bookId ->
-            findNavController().navigate(
-                ListFragmentDirections.toDetailFragment(bookId)
-            )
-        }
+        shelfAdapter = CategoryShelfSectionsAdapter(
+            onBookClick = { bookId ->
+                findNavController().navigate(
+                    ListFragmentDirections.toDetailFragment(bookId)
+                )
+            },
+            onShelfNeedMore = { shelfId ->
+                viewModel.loadMoreForShelf(shelfId)
+            }
+        )
         binding.recyclerView.adapter = shelfAdapter
         binding.recyclerView.itemAnimator = DefaultItemAnimator().apply {
             addDuration = 240
@@ -54,17 +58,6 @@ class ListFragment : Fragment() {
             changeDuration = 200
             moveDuration = 280
         }
-        binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                val lm = recyclerView.layoutManager as? LinearLayoutManager ?: return
-                if (dy <= 0) return
-                val lastVisible = lm.findLastVisibleItemPosition()
-                val total = lm.itemCount
-                if (total > 0 && lastVisible >= total - 2) {
-                    viewModel.loadMore()
-                }
-            }
-        })
     }
 
     private fun setupSwipeRefresh() {
@@ -84,7 +77,7 @@ class ListFragment : Fragment() {
                     is UIState.Success -> {
                         binding.progressIndicator.isVisible = false
                         binding.swipeRefreshLayout.isRefreshing = false
-                        binding.loadingMoreProgress.isVisible = uiState.loadingMore
+                        binding.loadingMoreProgress.isVisible = false
                         shelfAdapter.submitList(uiState.shelves)
                     }
                     is UIState.Error -> {
