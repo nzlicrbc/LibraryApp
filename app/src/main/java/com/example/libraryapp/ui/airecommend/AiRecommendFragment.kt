@@ -1,6 +1,5 @@
 package com.example.libraryapp.ui.airecommend
 
-import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,8 +9,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.DefaultItemAnimator
 import com.example.libraryapp.R
 import com.example.libraryapp.data.remote.model.GoogleBook
 import com.example.libraryapp.databinding.FragmentAiRecommendBinding
@@ -42,19 +43,6 @@ class AiRecommendFragment : Fragment() {
         setupChips()
         setupListeners()
         observeViewModel()
-        setupRadioButtons()
-    }
-
-    private fun setupRadioButtons() {
-        binding.apply {
-            moodLight.buttonTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), android.R.color.white))
-            moodThought.buttonTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), android.R.color.white))
-            moodRelaxing.buttonTintList = ColorStateList.valueOf(ContextCompat.getColor(requireContext(), android.R.color.white))
-
-            moodLight.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
-            moodThought.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
-            moodRelaxing.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
-        }
     }
 
     private fun setupRecyclerView() {
@@ -66,89 +54,74 @@ class AiRecommendFragment : Fragment() {
             }
         })
         binding.recommendationsRecycler.adapter = bookAdapter
+        binding.recommendationsRecycler.itemAnimator = DefaultItemAnimator().apply {
+            addDuration = 240
+            removeDuration = 200
+            changeDuration = 200
+            moveDuration = 280
+        }
     }
 
     private fun setupChips() {
         val purposes = listOf(
-            "Personal Development", "Entertainment", "Gaining Knowledge",
-            "Relaxation", "New Perspectives", "Motivation",
-            "Culture & Arts", "Work & Career"
+            "Personal Development",
+            "Entertainment",
+            "Gaining Knowledge",
+            "Relaxation",
+            "New Perspectives",
+            "Motivation",
+            "Culture & Arts",
+            "Work & Career"
         )
-        purposes.forEach { purpose ->
-            val chip = Chip(requireContext()).apply {
-                text = purpose
-                isCheckable = true
-
-                // Chip Design
-                setTextAppearanceResource(com.google.android.material.R.style.TextAppearance_MaterialComponents_Body1)
-
-                // Color settings
-                setTextColor(ContextCompat.getColor(context, R.color.colorPrimary))
-                chipBackgroundColor = ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.transparent))
-
-                // Border settings
-                chipStrokeWidth = resources.getDimension(R.dimen.chip_stroke_width)
-                chipStrokeColor = ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.white))
-
-                // When selected, background is white, text is primary color
-                checkedIcon = null
-                setOnCheckedChangeListener { _, isChecked ->
-                    if (isChecked) {
-                        chipBackgroundColor = ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.white))
-                        setTextColor(ContextCompat.getColor(context, R.color.colorPrimary))
-                    } else {
-                        chipBackgroundColor = ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.transparent))
-                        setTextColor(ContextCompat.getColor(context, android.R.color.white))
-                    }
-                }
-
-                alpha = 0f
-                scaleX = 0.8f
-                scaleY = 0.8f
-                animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(300).start()
-            }
-            binding.purposeChipGroup.addView(chip)
+        purposes.forEachIndexed { index, purpose ->
+            binding.purposeChipGroup.addView(createFilterChip(purpose, index))
         }
 
         val genres = listOf(
-            "Fiction", "Science Fiction", "Mystery", "Fantasy",
-            "Adventure", "Romance", "Science", "History",
-            "Philosophy", "Psychology", "Biography", "Classics"
+            "Fiction",
+            "Science Fiction",
+            "Mystery",
+            "Fantasy",
+            "Adventure",
+            "Romance",
+            "Science",
+            "History",
+            "Philosophy",
+            "Psychology",
+            "Biography",
+            "Classics"
         )
-        genres.forEach { genre ->
-            val chip = Chip(requireContext()).apply {
-                text = genre
-                isCheckable = true
+        genres.forEachIndexed { index, genre ->
+            binding.genreChipGroup.addView(
+                createFilterChip(genre, index + purposes.size)
+            )
+        }
+    }
 
-                // Chip Design
-                setTextAppearanceResource(com.google.android.material.R.style.TextAppearance_MaterialComponents_Body1)
-
-                // Color settings
-                setTextColor(ContextCompat.getColor(context, R.color.colorPrimary))
-                chipBackgroundColor = ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.transparent))
-
-                // Border settings
-                chipStrokeWidth = resources.getDimension(R.dimen.chip_stroke_width)
-                chipStrokeColor = ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.white))
-
-                // When selected, background is white, text is primary color
-                checkedIcon = null
-                setOnCheckedChangeListener { _, isChecked ->
-                    if (isChecked) {
-                        chipBackgroundColor = ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.white))
-                        setTextColor(ContextCompat.getColor(context, R.color.colorPrimary))
-                    } else {
-                        chipBackgroundColor = ColorStateList.valueOf(ContextCompat.getColor(context, android.R.color.transparent))
-                        setTextColor(ContextCompat.getColor(context, android.R.color.white))
-                    }
-                }
-
-                alpha = 0f
-                scaleX = 0.8f
-                scaleY = 0.8f
-                animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(300).start()
-            }
-            binding.genreChipGroup.addView(chip)
+    private fun createFilterChip(label: String, staggerIndex: Int): Chip {
+        val ctx = requireContext()
+        return Chip(ctx, null, com.google.android.material.R.attr.chipStyle).apply {
+            text = label
+            isCheckable = true
+            checkedIcon = null
+            chipStartPadding = resources.getDimension(R.dimen.padding_8)
+            chipEndPadding = resources.getDimension(R.dimen.padding_8)
+            chipStrokeWidth = resources.getDimension(R.dimen.chip_stroke_width)
+            chipBackgroundColor = ContextCompat.getColorStateList(ctx, R.color.ai_filter_chip_background)
+            chipStrokeColor = ContextCompat.getColorStateList(ctx, R.color.ai_filter_chip_stroke)
+            setTextColor(ContextCompat.getColorStateList(ctx, R.color.ai_filter_chip_text))
+            setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodyMedium)
+            alpha = 0f
+            scaleX = 0.92f
+            scaleY = 0.92f
+            animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(280)
+                .setStartDelay((staggerIndex * 35L).coerceAtMost(400))
+                .setInterpolator(FastOutSlowInInterpolator())
+                .start()
         }
     }
 
@@ -202,6 +175,7 @@ class AiRecommendFragment : Fragment() {
         binding.apply {
             surveyContainer.isVisible = false
             recommendationsRecycler.isVisible = false
+            aiToolbar.isVisible = true
         }
     }
 
@@ -210,6 +184,7 @@ class AiRecommendFragment : Fragment() {
         binding.apply {
             progressBar.isVisible = false
             recommendationsRecycler.isVisible = false
+            aiToolbar.isVisible = true
         }
     }
 
@@ -218,6 +193,7 @@ class AiRecommendFragment : Fragment() {
         binding.apply {
             progressBar.isVisible = false
             surveyContainer.isVisible = false
+            aiToolbar.isVisible = true
             bookAdapter.updateData(books)
         }
 
@@ -235,19 +211,21 @@ class AiRecommendFragment : Fragment() {
         fadeOutView(binding.progressBar)
         fadeInView(binding.surveyContainer)
         binding.recommendationsRecycler.isVisible = false
+        binding.aiToolbar.isVisible = true
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
 
-    private fun fadeInView(view: View, duration: Long = 500) {
+    private fun fadeInView(view: View, duration: Long = 420) {
         view.alpha = 0f
         view.isVisible = true
         view.animate()
             .alpha(1f)
             .setDuration(duration)
+            .setInterpolator(FastOutSlowInInterpolator())
             .start()
     }
 
-    private fun fadeOutView(view: View, duration: Long = 500) {
+    private fun fadeOutView(view: View, duration: Long = 320) {
         view.animate()
             .alpha(0f)
             .setDuration(duration)
@@ -257,8 +235,8 @@ class AiRecommendFragment : Fragment() {
 
     private fun animateClickEffect(view: View, duration: Long = 150) {
         view.animate()
-            .scaleX(0.95f)
-            .scaleY(0.95f)
+            .scaleX(0.97f)
+            .scaleY(0.97f)
             .setDuration(duration)
             .withEndAction {
                 view.animate()
