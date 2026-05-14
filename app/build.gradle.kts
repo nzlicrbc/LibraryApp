@@ -23,9 +23,6 @@ android {
 
         val localProperties = com.android.build.gradle.internal.cxx.configure.gradleLocalProperties(rootDir)
 
-        val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY", "")
-        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
-
         val googleApiKey = localProperties.getProperty("GOOGLE_API_KEY", "")
         buildConfigField("String", "GOOGLE_API_KEY", "\"$googleApiKey\"")
     }
@@ -68,7 +65,6 @@ dependencies {
     implementation(libs.lottie)
     implementation(libs.android.gif.drawable)
     implementation(libs.palette.ktx)
-    implementation(libs.generativeai)
     implementation(libs.okhttp.logging)
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.firebase.auth.ktx)
@@ -80,7 +76,6 @@ dependencies {
     // Room
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-    implementation(libs.generativeai)
     ksp(libs.room.compiler)
 
     // Lifecycle

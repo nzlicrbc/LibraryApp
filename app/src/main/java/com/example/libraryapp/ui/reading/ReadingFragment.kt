@@ -1,7 +1,6 @@
 package com.example.libraryapp.ui.reading
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,13 +8,13 @@ import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.libraryapp.databinding.FragmentReadingBinding
-import com.example.libraryapp.util.PrefUtil
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -24,11 +23,7 @@ class ReadingFragment : Fragment() {
 
     private lateinit var binding: FragmentReadingBinding
     private val args: ReadingFragmentArgs by navArgs()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        PrefUtil.initPref(requireContext())
-    }
+    private val viewModel: ReadingViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,7 +51,7 @@ class ReadingFragment : Fragment() {
             loadUrl(args.url)
 
             setOnScrollChangeListener { _, _, scrollY, _, _ ->
-                PrefUtil.saveBookScrollPosition(args.bookId, scrollY)
+                viewModel.saveScrollPosition(args.bookId, scrollY)
             }
 
             webViewClient = object : WebViewClient() {
@@ -67,9 +62,8 @@ class ReadingFragment : Fragment() {
 
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
-                    val scrollPosition = PrefUtil.getBookScrollPosition(args.bookId)
-
-                    CoroutineScope(Dispatchers.Main).launch {
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        val scrollPosition = viewModel.getScrollPosition(args.bookId)
                         delay(500)
                         view?.scrollTo(0, scrollPosition)
                     }

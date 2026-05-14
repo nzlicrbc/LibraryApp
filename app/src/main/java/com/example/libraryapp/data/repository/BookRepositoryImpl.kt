@@ -3,10 +3,9 @@ package com.example.libraryapp.data.repository
 import android.util.Log
 import com.example.libraryapp.data.local.dao.SavedBooksDao
 import com.example.libraryapp.data.local.entity.SavedBookEntity
-import com.example.libraryapp.data.remote.GeminiService
 import com.example.libraryapp.data.remote.GoogleBooksApi
 import com.example.libraryapp.data.remote.model.GoogleBook
-import com.example.libraryapp.ui.airecommend.model.UserPreferences
+import com.example.libraryapp.util.PrefUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
@@ -15,8 +14,7 @@ import kotlin.coroutines.cancellation.CancellationException
 
 class BookRepositoryImpl @Inject constructor(
     private val googleBooksApi: GoogleBooksApi,
-    private val savedBooksDao: SavedBooksDao,
-    private val geminiService: GeminiService
+    private val savedBooksDao: SavedBooksDao
 ) : BookRepository {
 
     override suspend fun searchBooks(
@@ -24,7 +22,7 @@ class BookRepositoryImpl @Inject constructor(
         maxResults: Int,
         startIndex: Int,
         orderBy: String
-    ): List<GoogleBook> {
+    ): Result<BookPage> {
         return withContext(Dispatchers.IO) {
             try {
                 ensureActive()
@@ -37,22 +35,42 @@ class BookRepositoryImpl @Inject constructor(
                 )
 
                 ensureActive()
-                response.items?.shuffled() ?: emptyList()
+                val items = response.items ?: emptyList()
+                val hasMore = items.isNotEmpty() &&
+                    startIndex + items.size < response.totalItems
+                Result.success(BookPage(items, hasMore))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 Log.e("BookRepository", "Error searching books", e)
-                emptyList()
+                Result.failure(e)
             }
         }
     }
 
-    override suspend fun getBooksBySubject(subject: String): List<GoogleBook> {
-        return try {
-            googleBooksApi.searchBooks("subject:$subject").items ?: emptyList()
-        } catch (e: Exception) {
-            Log.e("BookRepository", "Error getting books by subject", e)
-            emptyList()
+    override suspend fun getBooksBySubject(
+        subject: String,
+        maxResults: Int,
+        startIndex: Int
+    ): Result<BookPage> {
+        return withContext(Dispatchers.IO) {
+            try {
+                ensureActive()
+                val response = googleBooksApi.searchBooks(
+                    query = "subject:$subject",
+                    maxResults = maxResults,
+                    startIndex = startIndex
+                )
+                val items = response.items ?: emptyList()
+                val hasMore = items.isNotEmpty() &&
+                    startIndex + items.size < response.totalItems
+                Result.success(BookPage(items, hasMore))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("BookRepository", "Error getting books by subject", e)
+                Result.failure(e)
+            }
         }
     }
 
@@ -81,9 +99,11 @@ class BookRepositoryImpl @Inject constructor(
                         author = book.volumeInfo.authors?.firstOrNull() ?: "",
                         thumbnailUrl = book.volumeInfo.imageLinks?.thumbnail,
                         isFavorite = true,
-                        isSaved = false
+                        isSaved = false,
+                        lastReadPosition = PrefUtil.getBookScrollPosition(book.id)
                     )
                 )
+                PrefUtil.clearBookScrollPosition(book.id)
             }
         } catch (e: Exception) {
             Log.e("BookRepository", "Error toggling favorite", e)
@@ -106,51 +126,14 @@ class BookRepositoryImpl @Inject constructor(
                         author = book.volumeInfo.authors?.firstOrNull() ?: "",
                         thumbnailUrl = book.volumeInfo.imageLinks?.thumbnail,
                         isFavorite = false,
-                        isSaved = true
+                        isSaved = true,
+                        lastReadPosition = PrefUtil.getBookScrollPosition(book.id)
                     )
                 )
+                PrefUtil.clearBookScrollPosition(book.id)
             }
         } catch (e: Exception) {
             Log.e("BookRepository", "Error toggling save", e)
-        }
-    }
-
-    override suspend fun getAiRecommendations(userPreferences: UserPreferences): List<GoogleBook> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val results = mutableListOf<GoogleBook>()
-
-                userPreferences.favoriteGenres.forEach { genre ->
-                    val query = when (genre) {
-                        "Roman" -> "subject:fiction"
-                        "Bilim Kurgu" -> "subject:\"science fiction\""
-                        "Polisiye" -> "subject:mystery"
-                        "Kişisel Gelişim" -> "subject:\"self-help\""
-                        "Fantastik" -> "subject:fantasy"
-                        "Tarih" -> "subject:history"
-                        "Biyografi" -> "subject:biography"
-                        else -> "subject:${genre.lowercase()}"
-                    }
-
-                    try {
-                        val response = googleBooksApi.searchBooks(
-                            query = query,
-                            maxResults = 10
-                        )
-
-                        response.items?.let { books ->
-                            results.addAll(books.shuffled().take(2))
-                        }
-                    } catch (e: Exception) {
-                        Log.e("BookRepository", "Error searching for genre: $genre", e)
-                    }
-                }
-
-                results.shuffled().distinctBy { it.id }.take(5)
-            } catch (e: Exception) {
-                Log.e("BookRepository", "Error in recommendations", e)
-                emptyList()
-            }
         }
     }
 
@@ -226,12 +209,37 @@ class BookRepositoryImpl @Inject constructor(
                         author = book.volumeInfo.authors?.firstOrNull() ?: "",
                         thumbnailUrl = book.volumeInfo.imageLinks?.thumbnail,
                         isRead = true,
-                        completedDate = System.currentTimeMillis()
+                        completedDate = System.currentTimeMillis(),
+                        lastReadPosition = PrefUtil.getBookScrollPosition(book.id)
                     )
                 )
+                PrefUtil.clearBookScrollPosition(book.id)
             }
         } catch (e: Exception) {
             Log.e("BookRepository", "Error toggling read status", e)
+        }
+    }
+
+    override suspend fun getLastReadScrollPosition(bookId: String): Int {
+        return withContext(Dispatchers.IO) {
+            val entity = savedBooksDao.getBookById(bookId)
+            val pref = PrefUtil.getBookScrollPosition(bookId)
+            val db = entity?.lastReadPosition ?: 0
+            val merged = maxOf(db, pref)
+            if (entity != null && merged > db) {
+                savedBooksDao.updateLastReadPosition(bookId, merged)
+            }
+            merged
+        }
+    }
+
+    override suspend fun saveLastReadScrollPosition(bookId: String, position: Int) {
+        withContext(Dispatchers.IO) {
+            if (savedBooksDao.getBookById(bookId) != null) {
+                savedBooksDao.updateLastReadPosition(bookId, position)
+            } else {
+                PrefUtil.saveBookScrollPosition(bookId, position)
+            }
         }
     }
 }
