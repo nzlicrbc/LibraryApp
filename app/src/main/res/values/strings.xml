@@ -43,5 +43,10 @@
     <string name="mood_relaxing">Relaxing</string>
     <string name="preferred_mood">What kind of book are you looking for?</string>
     <string name="read_books_label">Books Read</string>
+    <string name="profile_photo_prompt">Profile photo</string>
+    <string name="profile_photo_gallery">Gallery</string>
+    <string name="profile_photo_camera">Camera</string>
+    <string name="profile_photo_permission_denied">Camera permission is required to take a photo.</string>
+    <string name="profile_photo_save_failed">Could not save the image.</string>
     <string name="mark_as_read">Mark as Read</string>
 </resources>
