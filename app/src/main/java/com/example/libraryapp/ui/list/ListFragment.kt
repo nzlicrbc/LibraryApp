@@ -10,6 +10,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.libraryapp.R
@@ -50,6 +51,12 @@ class ListFragment : Fragment(), BookAdapter.RecyclerViewEvent {
             }
         })
         binding.recyclerView.adapter = bookAdapter
+        binding.recyclerView.itemAnimator = DefaultItemAnimator().apply {
+            addDuration = 240
+            removeDuration = 200
+            changeDuration = 200
+            moveDuration = 280
+        }
         binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 val lm = recyclerView.layoutManager as? GridLayoutManager ?: return

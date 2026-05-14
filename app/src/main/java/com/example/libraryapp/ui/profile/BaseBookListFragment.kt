@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.DefaultItemAnimator
 import com.example.libraryapp.databinding.FragmentReadFavoriteBooksBinding
 import com.example.libraryapp.ui.list.adapter.BookAdapter
 
@@ -40,6 +41,12 @@ abstract class BaseBookListFragment : Fragment() {
             }
         })
         binding.recyclerView.adapter = bookAdapter
+        binding.recyclerView.itemAnimator = DefaultItemAnimator().apply {
+            addDuration = 240
+            removeDuration = 200
+            changeDuration = 200
+            moveDuration = 280
+        }
     }
 
     abstract fun observeViewModel()

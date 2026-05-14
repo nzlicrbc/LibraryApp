@@ -13,6 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.libraryapp.databinding.FragmentSearchBinding
@@ -56,6 +57,12 @@ class SearchFragment : Fragment() {
             }
         })
         binding.searchRecyclerView.adapter = searchAdapter
+        binding.searchRecyclerView.itemAnimator = DefaultItemAnimator().apply {
+            addDuration = 240
+            removeDuration = 200
+            changeDuration = 200
+            moveDuration = 280
+        }
         binding.loadingMoreBar.isVisible = false
         binding.searchRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {

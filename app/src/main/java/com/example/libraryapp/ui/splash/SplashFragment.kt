@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.libraryapp.R
@@ -30,6 +31,13 @@ class SplashFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        view.alpha = 0f
+        view.animate()
+            .alpha(1f)
+            .setDuration(420)
+            .setInterpolator(FastOutSlowInInterpolator())
+            .start()
 
         Handler(Looper.getMainLooper()).postDelayed({
             checkAuthState()
