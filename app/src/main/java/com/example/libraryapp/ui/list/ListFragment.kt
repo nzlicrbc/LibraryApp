@@ -11,19 +11,18 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.libraryapp.R
 import com.example.libraryapp.databinding.FragmentListBinding
-import com.example.libraryapp.ui.list.adapter.BookAdapter
+import com.example.libraryapp.ui.list.adapter.CategoryShelfSectionsAdapter
 import com.example.libraryapp.ui.list.model.UIState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class ListFragment : Fragment(), BookAdapter.RecyclerViewEvent {
+class ListFragment : Fragment() {
     private lateinit var binding: FragmentListBinding
-    private lateinit var bookAdapter: BookAdapter
+    private lateinit var shelfAdapter: CategoryShelfSectionsAdapter
     private val viewModel: ListViewModel by viewModels()
 
     override fun onCreateView(
@@ -43,14 +42,12 @@ class ListFragment : Fragment(), BookAdapter.RecyclerViewEvent {
     }
 
     private fun setupRecyclerView() {
-        bookAdapter = BookAdapter(emptyList(), object : BookAdapter.RecyclerViewEvent {
-            override fun onItemClick(bookId: String) {
-                findNavController().navigate(
-                    ListFragmentDirections.toDetailFragment(bookId)
-                )
-            }
-        })
-        binding.recyclerView.adapter = bookAdapter
+        shelfAdapter = CategoryShelfSectionsAdapter { bookId ->
+            findNavController().navigate(
+                ListFragmentDirections.toDetailFragment(bookId)
+            )
+        }
+        binding.recyclerView.adapter = shelfAdapter
         binding.recyclerView.itemAnimator = DefaultItemAnimator().apply {
             addDuration = 240
             removeDuration = 200
@@ -59,11 +56,11 @@ class ListFragment : Fragment(), BookAdapter.RecyclerViewEvent {
         }
         binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                val lm = recyclerView.layoutManager as? GridLayoutManager ?: return
+                val lm = recyclerView.layoutManager as? LinearLayoutManager ?: return
                 if (dy <= 0) return
                 val lastVisible = lm.findLastVisibleItemPosition()
                 val total = lm.itemCount
-                if (total > 0 && lastVisible >= total - 4) {
+                if (total > 0 && lastVisible >= total - 2) {
                     viewModel.loadMore()
                 }
             }
@@ -88,7 +85,7 @@ class ListFragment : Fragment(), BookAdapter.RecyclerViewEvent {
                         binding.progressIndicator.isVisible = false
                         binding.swipeRefreshLayout.isRefreshing = false
                         binding.loadingMoreProgress.isVisible = uiState.loadingMore
-                        bookAdapter.updateData(uiState.data)
+                        shelfAdapter.submitList(uiState.shelves)
                     }
                     is UIState.Error -> {
                         binding.progressIndicator.isVisible = false
@@ -99,11 +96,5 @@ class ListFragment : Fragment(), BookAdapter.RecyclerViewEvent {
                 }
             }
         }
-    }
-
-    override fun onItemClick(bookId: String) {
-        findNavController().navigate(
-            ListFragmentDirections.toDetailFragment(bookId)
-        )
     }
 }

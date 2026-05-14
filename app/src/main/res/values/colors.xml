@@ -29,4 +29,33 @@
     <color name="colorError">#D32F2F</color> <!-- Hata mesajları için kırmızı -->
     <color name="colorSuccess">#388E3C</color> <!-- Başarı mesajları için yeşil -->
     <color name="colorDivider">#BDBDBD</color> <!-- Çizgi/delimiter için -->
+
+    <!-- Shelf row tints (solid; alpha applied in code) -->
+    <color name="shelf_design">#F57C00</color>
+    <color name="shelf_psychology">#1976D2</color>
+    <color name="shelf_fiction">#7B1FA2</color>
+    <color name="shelf_fantasy">#00897B</color>
+    <color name="shelf_mystery">#5D4037</color>
+    <color name="shelf_romance">#C2185B</color>
+    <color name="shelf_science">#388E3C</color>
+    <color name="shelf_history">#6D4C41</color>
+    <color name="shelf_biography">#0097A7</color>
+    <color name="shelf_art">#E91E63</color>
+    <color name="shelf_business">#303F9F</color>
+    <color name="shelf_computers">#455A64</color>
+    <color name="shelf_religion">#512DA8</color>
+    <color name="shelf_poetry">#AD1457</color>
+    <color name="shelf_children">#F9A825</color>
+    <color name="shelf_self_help">#00796B</color>
+    <color name="shelf_travel">#0277BD</color>
+    <color name="shelf_cooking">#BF360C</color>
+    <color name="shelf_health">#2E7D32</color>
+    <color name="shelf_philosophy">#4527A0</color>
+    <color name="shelf_others_base">#9E9E9E</color>
+    <color name="shelf_fallback_1">#5C6BC0</color>
+    <color name="shelf_fallback_2">#26A69A</color>
+    <color name="shelf_fallback_3">#FFA726</color>
+    <color name="shelf_fallback_4">#78909C</color>
+    <color name="shelf_fallback_5">#8E24AA</color>
+    <color name="shelf_peg">#757575</color>
 </resources>

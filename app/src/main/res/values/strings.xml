@@ -49,4 +49,9 @@
     <string name="profile_photo_permission_denied">Camera permission is required to take a photo.</string>
     <string name="profile_photo_save_failed">Could not save the image.</string>
     <string name="mark_as_read">Mark as Read</string>
+    <string name="shelf_header_my_favourite">My Favourite</string>
+    <string name="shelf_header_books">BOOKS</string>
+    <string name="category_others">Others</string>
+    <string name="view_books">View Books</string>
+    <string name="books_count_format">%1$d books</string>
 </resources>
