@@ -14,7 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.libraryapp.databinding.FragmentSearchBinding
 import com.example.libraryapp.ui.list.adapter.BookAdapter
@@ -66,7 +66,7 @@ class SearchFragment : Fragment() {
         binding.loadingMoreBar.isVisible = false
         binding.searchRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                val lm = recyclerView.layoutManager as? LinearLayoutManager ?: return
+                val lm = recyclerView.layoutManager as? GridLayoutManager ?: return
                 if (dy <= 0) return
                 val lastVisible = lm.findLastVisibleItemPosition()
                 val total = lm.itemCount

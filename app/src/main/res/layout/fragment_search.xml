@@ -43,7 +43,13 @@
             android:id="@+id/search_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/margin_8"
+            android:paddingEnd="@dimen/margin_8"
+            android:paddingTop="@dimen/margin_8"
+            android:paddingBottom="@dimen/margin_16"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            app:spanCount="2"
             tools:listitem="@layout/book_item" />
 
         <ProgressBar
