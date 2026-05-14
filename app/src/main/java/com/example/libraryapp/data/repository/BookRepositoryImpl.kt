@@ -3,10 +3,8 @@ package com.example.libraryapp.data.repository
 import android.util.Log
 import com.example.libraryapp.data.local.dao.SavedBooksDao
 import com.example.libraryapp.data.local.entity.SavedBookEntity
-import com.example.libraryapp.data.remote.GeminiService
 import com.example.libraryapp.data.remote.GoogleBooksApi
 import com.example.libraryapp.data.remote.model.GoogleBook
-import com.example.libraryapp.ui.airecommend.model.UserPreferences
 import com.example.libraryapp.util.PrefUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
@@ -16,8 +14,7 @@ import kotlin.coroutines.cancellation.CancellationException
 
 class BookRepositoryImpl @Inject constructor(
     private val googleBooksApi: GoogleBooksApi,
-    private val savedBooksDao: SavedBooksDao,
-    private val geminiService: GeminiService
+    private val savedBooksDao: SavedBooksDao
 ) : BookRepository {
 
     override suspend fun searchBooks(
@@ -137,45 +134,6 @@ class BookRepositoryImpl @Inject constructor(
             }
         } catch (e: Exception) {
             Log.e("BookRepository", "Error toggling save", e)
-        }
-    }
-
-    override suspend fun getAiRecommendations(userPreferences: UserPreferences): List<GoogleBook> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val results = mutableListOf<GoogleBook>()
-
-                userPreferences.favoriteGenres.forEach { genre ->
-                    val query = when (genre) {
-                        "Roman" -> "subject:fiction"
-                        "Bilim Kurgu" -> "subject:\"science fiction\""
-                        "Polisiye" -> "subject:mystery"
-                        "Kişisel Gelişim" -> "subject:\"self-help\""
-                        "Fantastik" -> "subject:fantasy"
-                        "Tarih" -> "subject:history"
-                        "Biyografi" -> "subject:biography"
-                        else -> "subject:${genre.lowercase()}"
-                    }
-
-                    try {
-                        val response = googleBooksApi.searchBooks(
-                            query = query,
-                            maxResults = 10
-                        )
-
-                        response.items?.let { books ->
-                            results.addAll(books.shuffled().take(2))
-                        }
-                    } catch (e: Exception) {
-                        Log.e("BookRepository", "Error searching for genre: $genre", e)
-                    }
-                }
-
-                results.shuffled().distinctBy { it.id }.take(5)
-            } catch (e: Exception) {
-                Log.e("BookRepository", "Error in recommendations", e)
-                emptyList()
-            }
         }
     }
 

@@ -9,10 +9,6 @@
         android:icon="@drawable/ic_search"
         android:title="Search"/>
     <item
-        android:id="@+id/aiRecommendFragment"
-        android:icon="@drawable/ic_recommend"
-        android:title="AI Books"/>
-    <item
         android:id="@+id/profileFragment"
         android:icon="@drawable/ic_person"
         android:title="Profile"/>

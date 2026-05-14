@@ -27,9 +27,5 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideUserPreferencesDao(database: LibraryDatabase) = database.userPreferencesDao()
-
-    @Provides
-    @Singleton
     fun provideSavedBooksDao(database: LibraryDatabase) = database.savedBooksDao()
 }
