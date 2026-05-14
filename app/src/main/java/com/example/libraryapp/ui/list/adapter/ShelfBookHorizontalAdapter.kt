@@ -15,8 +15,17 @@ class ShelfBookHorizontalAdapter(
     private var books: List<GoogleBook> = emptyList()
 
     fun submit(list: List<GoogleBook>) {
+        if (sameBookSequence(books, list)) return
         books = list
         notifyDataSetChanged()
+    }
+
+    private fun sameBookSequence(a: List<GoogleBook>, b: List<GoogleBook>): Boolean {
+        if (a.size != b.size) return false
+        for (i in a.indices) {
+            if (a[i].id != b[i].id) return false
+        }
+        return true
     }
 
     override fun getItemCount(): Int = books.size

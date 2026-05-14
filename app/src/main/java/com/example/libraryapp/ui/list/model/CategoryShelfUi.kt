@@ -11,5 +11,6 @@ data class CategoryShelfUi(
     @ColorRes val shelfColorRes: Int,
     val books: List<GoogleBook>,
     val isLoadingMore: Boolean = false,
-    val canLoadMore: Boolean = false
+    val canLoadMore: Boolean = false,
+    val resetHorizontalScroll: Boolean = false
 )

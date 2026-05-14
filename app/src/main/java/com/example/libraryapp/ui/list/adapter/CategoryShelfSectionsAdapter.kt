@@ -70,6 +70,8 @@ class CategoryShelfSectionsAdapter(
             binding.recyclerHorizontalBooks.addOnScrollListener(scrollListener)
         }
 
+        private var lastBoundShelfId: String? = null
+
         fun bind(ui: CategoryShelfUi) = with(binding) {
             boundShelf = ui
             textCategoryTitle.text = root.context.getString(ui.titleRes)
@@ -81,8 +83,12 @@ class CategoryShelfSectionsAdapter(
             val drawable = viewShelfBar.background.mutate() as GradientDrawable
             drawable.setColor(ColorUtils.setAlphaComponent(base, 0xCC))
 
+            val shelfChanged = lastBoundShelfId != ui.shelfId
             innerAdapter.submit(ui.books)
-            recyclerHorizontalBooks.scrollToPosition(0)
+            if (ui.resetHorizontalScroll || shelfChanged) {
+                recyclerHorizontalBooks.scrollToPosition(0)
+            }
+            lastBoundShelfId = ui.shelfId
 
             val scrollStep = (root.resources.displayMetrics.density * 280f).toInt()
             buttonScrollPrev.setOnClickListener {

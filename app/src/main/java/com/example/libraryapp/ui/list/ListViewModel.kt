@@ -66,7 +66,10 @@ class ListViewModel @Inject constructor(
             shelvesLoading.add(shelfId)
             _books.value = UIState.Success(
                 state.shelves.map {
-                    if (it.shelfId == shelfId) it.copy(isLoadingMore = true) else it
+                    it.copy(
+                        isLoadingMore = it.shelfId == shelfId,
+                        resetHorizontalScroll = false
+                    )
                 }
             )
 
@@ -82,12 +85,12 @@ class ListViewModel @Inject constructor(
                     }
                     shelfStartIndex[shelfId] = start + page.items.size
                     shelfHasMore[shelfId] = page.hasMore
-                    emitShelfSuccess()
+                    emitShelfSuccess(resetHorizontalScroll = false)
                 },
                 onFailure = {
                     if (gen != loadGeneration) return@launch
                     shelvesLoading.remove(shelfId)
-                    emitShelfSuccess()
+                    emitShelfSuccess(resetHorizontalScroll = false)
                 }
             )
         }
@@ -109,7 +112,7 @@ class ListViewModel @Inject constructor(
             val outcome = fetchAllShelvesInitial(gen)
             if (gen != loadGeneration) return@launch
             outcome.fold(
-                onSuccess = { emitShelfSuccess() },
+                onSuccess = { emitShelfSuccess(resetHorizontalScroll = true) },
                 onFailure = { e ->
                     if (e is CancellationException) throw e
                     _books.value = UIState.Error(e.message ?: "An error occurred")
@@ -267,11 +270,11 @@ class ListViewModel @Inject constructor(
         }
     }
 
-    private fun emitShelfSuccess() {
-        _books.value = UIState.Success(buildShelfUiList())
+    private fun emitShelfSuccess(resetHorizontalScroll: Boolean = false) {
+        _books.value = UIState.Success(buildShelfUiList(resetHorizontalScroll))
     }
 
-    private fun buildShelfUiList(): List<CategoryShelfUi> =
+    private fun buildShelfUiList(resetHorizontalScroll: Boolean): List<CategoryShelfUi> =
         HomeShelfCatalog.items.map { def ->
             val books = shelfBooks[def.id].orEmpty().toList()
             CategoryShelfUi(
@@ -281,7 +284,8 @@ class ListViewModel @Inject constructor(
                 shelfColorRes = def.shelfColorRes,
                 books = books,
                 isLoadingMore = def.id in shelvesLoading,
-                canLoadMore = shelfHasMore[def.id] == true
+                canLoadMore = shelfHasMore[def.id] == true,
+                resetHorizontalScroll = resetHorizontalScroll
             )
         }
 
