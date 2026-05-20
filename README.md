@@ -23,7 +23,7 @@ Google Books API ile kitap keşfi, arama, detay ve okuma; Firebase ile giriş/ka
 
 ## Demo
 
-<img width="400" height="480" alt="Video Project" src="https://github.com/user-attachments/assets/f40968f0-d887-4ade-83b8-f95695c75299" />
+<img width="400" alt="Uygulama demosu" src="https://github.com/user-attachments/assets/f40968f0-d887-4ade-83b8-f95695c75299" />
 
 
 ---
