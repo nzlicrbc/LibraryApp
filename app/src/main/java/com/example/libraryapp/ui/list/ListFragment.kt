@@ -71,17 +71,22 @@ class ListFragment : Fragment() {
             viewModel.books.collect { uiState ->
                 when (uiState) {
                     is UIState.Loading -> {
-                        binding.progressIndicator.isVisible = true
+                        val fullScreen = !binding.swipeRefreshLayout.isRefreshing
+                        binding.lottieLoading.isVisible = fullScreen
+                        if (fullScreen) binding.lottieLoading.playAnimation()
+                        else binding.lottieLoading.cancelAnimation()
                         binding.loadingMoreProgress.isVisible = false
                     }
                     is UIState.Success -> {
-                        binding.progressIndicator.isVisible = false
+                        binding.lottieLoading.cancelAnimation()
+                        binding.lottieLoading.isVisible = false
                         binding.swipeRefreshLayout.isRefreshing = false
                         binding.loadingMoreProgress.isVisible = false
                         shelfAdapter.submitList(uiState.shelves)
                     }
                     is UIState.Error -> {
-                        binding.progressIndicator.isVisible = false
+                        binding.lottieLoading.cancelAnimation()
+                        binding.lottieLoading.isVisible = false
                         binding.loadingMoreProgress.isVisible = false
                         binding.swipeRefreshLayout.isRefreshing = false
                         Toast.makeText(context, uiState.message, Toast.LENGTH_SHORT).show()
